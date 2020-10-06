@@ -5,12 +5,18 @@ use std::{
     convert::{TryFrom, TryInto,},
     path::Path,
     sync::Arc,
+    iter,
 };
 use futures::{
     future::{
+	Future,
 	OptionFuture,
 	FutureExt,
 	join_all,
+    },
+    stream::{
+	Stream,
+	StreamExt,
     },
 };
 use tokio::{
@@ -83,16 +89,23 @@ async fn work<P: AsRef<Path>>(apath: P, sem: Option<Arc<Semaphore>>) -> Result<(
     }
 }
 
-pub async fn main<I: IntoIterator<Item=String>>(list: I) -> eyre::Result<()>
+async fn join_stream<I: Stream>(stream: I) -> impl Iterator<Item=<I::Item as Future>::Output> + ExactSizeIterator
+    where I::Item: Future
+{
+    //gotta be a better way than heap allocating here, right?
+    stream.then(|x| async move { x.await }).collect::<Vec<_>>().await.into_iter()
+}
+
+pub async fn main<I: Stream<Item=String>>(list: I) -> eyre::Result<()>
 {
     let sem = gensem();
-    let list = list.into_iter();
+    //let list = list.into_iter();
     let mut failures = match list.size_hint() {
 	(0, Some(0)) | (0, None) => Vec::new(),
 	(x, None) | (_, Some(x)) => Vec::with_capacity(x),
     };
     let mut done = 0usize;
-    for (i, res) in (0usize..).zip(join_all(list.map(|file| tokio::spawn(work(file, sem.clone()))))
+    for (i, res) in (0usize..).zip(join_stream(list.map(|file| tokio::spawn(work(file, sem.clone()))))
 				   .map(|x| {trace!("--- {} Finished ---", x.len()); x}).await)
     {
 	//trace!("Done on {:?}", res);

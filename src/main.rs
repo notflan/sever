@@ -59,7 +59,10 @@ fn args_or_out<T: ExactSizeIterator>(i: T, low: usize) -> T
 async fn main() -> eyre::Result<()> {
     reyre!(init(), "Failed to initialise")?;
     
-    reyre!(parallel::main(args_or_out(std::env::args(), 2).skip(1).dedup()).await, "Jobs failed")
+    reyre!(parallel::main(futures::stream::iter(args_or_out(std::env::args(), 2)
+						.skip(1)
+						.dedup())).await,
+	   "Jobs failed")
 }
 
 #[cfg(not(feature="parallel"))]
