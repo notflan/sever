@@ -25,7 +25,13 @@ use tokio::{
 };
 use error::{Error, ErrorKind};
 
-const MAX_WORKERS: Option<NonZeroUsize> = Some(unsafe {NonZeroUsize::new_unchecked(4096)});
+cfg_if!{
+    if #[cfg(feature="limit-concurrency")] {
+	pub const MAX_WORKERS: Option<NonZeroUsize> = Some(unsafe {NonZeroUsize::new_unchecked(4096)});
+    } else {
+	pub const MAX_WORKERS: Option<NonZeroUsize> = None;
+    }
+}
 
 fn gensem() -> Option<Arc<Semaphore>>
 {
@@ -67,7 +73,7 @@ async fn work<P: AsRef<Path>>(apath: P, sem: Option<Arc<Semaphore>>) -> Result<(
     use std::os::unix::fs::MetadataExt;
 
     let nlink = meta.nlink();
-    debug!("<{:?}> Links: {}", path, nlink);
+    debug!("<{:?}> has {} links", path, nlink);
     if nlink > 1 {
 	//todo work i guess fuck it
 	unlink(path).await?;
@@ -80,8 +86,13 @@ async fn work<P: AsRef<Path>>(apath: P, sem: Option<Arc<Semaphore>>) -> Result<(
 pub async fn main<I: IntoIterator<Item=String>>(list: I) -> eyre::Result<()>
 {
     let sem = gensem();
-    let mut failures = 0usize;
-    for (i, res) in (0usize..).zip(join_all(list.into_iter().map(|file| tokio::spawn(work(file, sem.clone()))))
+    let list = list.into_iter();
+    let mut failures = match list.size_hint() {
+	(0, Some(0)) | (0, None) => Vec::new(),
+	(x, None) | (_, Some(x)) => Vec::with_capacity(x),
+    };
+    let mut done = 0usize;
+    for (i, res) in (0usize..).zip(join_all(list.map(|file| tokio::spawn(work(file, sem.clone()))))
 				   .map(|x| {trace!("--- {} Finished ---", x.len()); x}).await)
     {
 	//trace!("Done on {:?}", res);
@@ -96,10 +107,11 @@ pub async fn main<I: IntoIterator<Item=String>>(list: I) -> eyre::Result<()>
 			.with_warning(|| "This suggests a bug in the program");
 		} else {
 		    warn!("Child {} cancelled", i);
-		    failures += 1;
+		    return Ok(());
 		}
 	    },
-	    Ok(Err(kind)) if !kind.kind().is_skippable() => { //
+	    Ok(Err(kind)) if !kind.kind().is_skippable() => {
+		failures.push((kind.path().to_owned(), kind.to_string()));
 		let fuck = format!("{:?}", kind.path());
 		let sug = kind.kind().suggestion();
 		let err = Err::<std::convert::Infallible, _>(kind)
@@ -109,18 +121,23 @@ pub async fn main<I: IntoIterator<Item=String>>(list: I) -> eyre::Result<()>
 		    .unwrap_err();
 		error!("{}", err);
 		debug!("Error: {:?}", err);
-		failures += 1;
 	    },
 	    Ok(Err(k)) => {
+		failures.push((k.path().to_owned(), k.to_string()));
 		trace!("<{:?}> Failed (skipped)", k.path());
-		failures+=1;
 	    },
 	}
+	done+=1;
     }
 
-    if failures > 0 {
-	return Err(eyre!("Some tasks failed to complete successfullly"))
-	    .with_section(|| failures.to_string().header("Number of failed tasks"))
+    if failures.len() > 0 {
+	return Err(eyre!("{}/{} tasks failed to complete successfullly", failures.len(), done))
+	    .with_section(|| failures.into_iter()
+			  .map(|(x, err)| format!("{}: {}", x.into_os_string()
+						  .into_string()
+						  .unwrap_or_else(|os| os.to_string_lossy().into_owned()), err))
+			  .join("\n")
+			  .header("Failed tasks:"))
 	    .with_suggestion(|| "Run with `RUST_LOG=debug` or `RUST_LOG=trace` for verbose error reporting");
     }
 

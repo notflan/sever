@@ -54,6 +54,7 @@ impl TempFile
 	d
     }
 
+    #[cfg(feature="parallel")] 
     /// Attempt to remove this temp file async
     pub async fn drop_async(mut self) -> tokio::io::Result<()>
     {
