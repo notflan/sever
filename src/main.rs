@@ -7,6 +7,7 @@ use color_eyre::{
     eyre::{self, eyre, WrapErr},
     Help, SectionExt,
 };
+use lazy_static::lazy_static;
 
 fn init() -> eyre::Result<()>
 {
@@ -16,6 +17,7 @@ fn init() -> eyre::Result<()>
     Ok(())
 }
 
+mod temp;
 mod error;
 
 #[cfg(feature="parallel")]

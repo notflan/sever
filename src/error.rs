@@ -12,6 +12,8 @@ pub enum ErrorKind
     Stat(io::Error),
     Open(io::Error),
     Copy(io::Error),
+    Unlink(io::Error),
+    Move(io::Error),
 }
 
 impl ErrorKind
@@ -75,6 +77,8 @@ impl std::error::Error for Error
 	    ErrorKind::Stat(io) => io,
 	    ErrorKind::Open(io) => io,
 	    ErrorKind::Copy(io) => io,
+	    ErrorKind::Unlink(io) => io,
+	    ErrorKind::Move(io) => io,
 	   // _ => return None,
 	})
     }
@@ -86,7 +90,9 @@ impl std::fmt::Display for Error
 	match &self.kind {
 	    ErrorKind::Stat(_) => write!(f, "Failed to stat file {:?}", self.path),
 	    ErrorKind::Open(_) => write!(f, "Failed to open file {:?}", self.path),
-	    ErrorKind::Copy(_) => write!(f, "Failed to create copy of file {:?}", self.path),
+	    ErrorKind::Copy(_) => write!(f, "Failed to create copy of file to temp location {:?}", self.path),
+	    ErrorKind::Unlink(_) => write!(f, "Failed to unlink file {:?}", self.path),
+	    ErrorKind::Move(_) => write!(f, "Failed to move new file into place {:?}", self.path),
 	}
     }
 }

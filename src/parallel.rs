@@ -36,17 +36,13 @@ fn gensem() -> Option<Arc<Semaphore>>
     }
 }
 
-fn tpath() -> String
-{
-    todo!();
-    ".test.tmp".to_owned()
-}
-
 async fn unlink(path: &Path) -> Result<(), Error>
 {
-    let tmp = path.parent().unwrap().join(tpath());
-    fs::copy(path, tmp).await.map_err(|e| Error::new(ErrorKind::Copy(e), path.to_owned()))?;
-    todo!();
+    let tmp = temp::TempFile::new_in(path.parent().unwrap());
+    fs::copy(path, &tmp).await.map_err(|e| Error::new(ErrorKind::Copy(e), path.to_owned()))?;
+    fs::remove_file(path).await.map_err(|e| Error::new(ErrorKind::Unlink(e), path.to_owned()))?;
+    fs::rename(&tmp, path).await.map_err(|e| Error::new(ErrorKind::Move(e), path.to_owned()))?;
+    tmp.release(); // file no longer exists, so no need to drop;
     Ok(())
 }
 
