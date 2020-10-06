@@ -1,42 +1,39 @@
+#![allow(dead_code)]
 
-/// Run something as async or or depending on feature flag `parallel`
-macro_rules! sync
+#[macro_use] extern crate log;
+#[macro_use] mod macros;
+
+use color_eyre::{
+    eyre::{self, eyre, WrapErr},
+    Help, SectionExt,
+};
+
+fn init() -> eyre::Result<()>
 {
-    (if {$($if:tt)*} else {$($else:tt)*}) => {
-	cfg_if::cfg_if! {
-	    if #[cfg(feature="parallel")] {
-		$($if)*
-	    } else {
-		$($else)*
-	    }
-	}
-    };
-    
-    (if {$($if:tt)*}) => {
-	cfg_if::cfg_if! {
-	    if #[cfg(feature="parallel")] {
-		$($if)*
-	    }
-	}
-    };
-    
-    (else {$($if:tt)*}) => {
-	cfg_if::cfg_if! {
-	    if #[cfg(not(eature="parallel"))] {
-		$($if)*
-	    }
-	}
-    };
+    color_eyre::install()?;
+    pretty_env_logger::init(); //TODO: Change to builder
+    trace!("Initialised");
+    Ok(())
 }
+
+mod error;
+
+#[cfg(feature="parallel")]
+mod parallel;
 
 #[cfg(feature="parallel")]
 #[cfg_attr(feature="parallel", tokio::main)]
-async fn main() {
-    println!("Hello world!")
+async fn main() -> eyre::Result<()> {
+    reyre!(init(), "Failed to initialise")?;
+    
+    reyre!(parallel::main(std::env::args().skip(1)).await, "Jobs failed")
 }
 
+#[cfg(not(feature="parallel"))]
+mod serial;
 
 #[cfg(not(feature="parallel"))]
-fn main() {
-    println!("Hello world! sync")
+fn main() -> eyre::Result<()> {
+    reyre!(init(), "Failed to initialise")?;
+    todo!("Sync unimplemented")
 }

@@ -8,7 +8,9 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [features]
-parallel = ["tokio"]
+default = ["parallel"]
+
+parallel = ["tokio", "futures"]
 threads = ["parallel", "tokio/rt-threaded"]
 
 # use PRETTY_ENV_LOGGER I guess
@@ -18,3 +20,10 @@ threads = ["parallel", "tokio/rt-threaded"]
 [dependencies]
 cfg-if = "0.1.10"
 tokio = {version = "0.2", features = ["full"], optional = true}
+log = "0.4.11"
+pretty_env_logger = "0.4.0"
+color-eyre = {version = "0.5.6", default-features=false}
+futures = {version = "0.3.5", optional = true}
+
+[build-dependencies]
+rustc_version = "0.2"
