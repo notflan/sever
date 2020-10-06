@@ -28,6 +28,8 @@ use map::*;
 mod temp;
 mod error;
 mod arg;
+#[cfg(feature="recursive")]
+mod recurse;
 
 cfg_if!{
     if #[cfg(feature="splash")] {
@@ -57,11 +59,20 @@ fn args_or_out<T: ExactSizeIterator>(i: T, low: usize) -> T
 #[cfg(feature="parallel")]
 #[cfg_attr(feature="parallel", tokio::main)]
 async fn main() -> eyre::Result<()> {
-    reyre!(init(), "Failed to initialise")?;
+    use futures::{
+	stream,
+	prelude::*,
+    };
     
-    reyre!(parallel::main(futures::stream::iter(args_or_out(std::env::args(), 2)
-						.skip(1)
-						.dedup())).await,
+    reyre!(init(), "Failed to initialise")?;
+    reyre!(parallel::main(stream::iter(args_or_out(std::env::args(), 2)
+				       .skip(1)
+				       .dedup())
+			  .filter_map(|file| {
+			      async move {
+				  Some(parallel::expand_dir(file).await)
+			      }
+			  }).flatten()).await,
 	   "Jobs failed")
 }
 

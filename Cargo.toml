@@ -8,10 +8,13 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [features]
-default = ["parallel", "limit-concurrency", "splash"]
+default = ["parallel", "limit-concurrency", "splash", "limit-recursion"]
 
 # Limit the concurrent operations of parallel mode to 4096
 limit-concurrency = ["parallel"]
+# Handle directories recursively
+recursive = []
+limit-recursion = ["recursive"]
 splash = []
 parallel = ["tokio", "futures"]
 threads = ["parallel", "tokio/rt-threaded"]

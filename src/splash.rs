@@ -39,9 +39,12 @@ For verbose output, set `RUST_LOG` env var to one of the following:
 Made by {} with <3 (Licensed GPL 3.0 or later)"#, arg::program_name(), env!("CARGO_PKG_VERSION"), env!("CARGO_PKG_AUTHORS"));
     println!("\nEnabled extensions: ");
     feature!(in nightly, "\tCompiled with Rust nightly extensions");
-    println!();
+    println!("Features:");
     feature!("parallel", "\tWill run up to {} operations in parallel", parallel::MAX_WORKERS.map(|x| Cow::Owned(x.to_string())).unwrap_or(Cow::Borrowed("unlimited")));
     feature!("limit-concurrency", "Concurrency is capped");
     feature!("threads", "\tUsing thread-pool");
+    feature!("recursive", "\tRecursivly process files up to {} directories deep", recurse::MAX_DEPTH);
+    feature!("limit-recursion", "Concurrency is capped");
+
     std::process::exit(1)
 }
