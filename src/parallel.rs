@@ -67,7 +67,7 @@ async fn work<P: AsRef<Path>>(apath: P, sem: Option<Arc<Semaphore>>) -> Result<(
     use std::os::unix::fs::MetadataExt;
 
     let nlink = meta.nlink();
-    trace!("<{:?}> Links: {}", path, nlink);
+    debug!("<{:?}> Links: {}", path, nlink);
     if nlink > 1 {
 	//todo work i guess fuck it
 	unlink(path).await?;
