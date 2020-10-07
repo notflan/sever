@@ -79,4 +79,5 @@ mod para
     }
 
 }
+#[cfg(feature="parallel")] 
 pub use para::*;

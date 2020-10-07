@@ -84,7 +84,7 @@ async fn work<P: AsRef<Path>>(apath: P, sem: Option<Arc<Semaphore>>) -> Result<(
     use std::os::unix::fs::MetadataExt;
 
     let nlink = meta.nlink();
-    debug!("<{:?}> has {} links", path, nlink);
+    trace!("<{:?}> has {} links", path, nlink);
     if nlink > 1 {
 	//todo work i guess fuck it
 	unlink(path).await?;
@@ -115,7 +115,7 @@ pub async fn main<I: Stream<Item=String>>(list: I) -> eyre::Result<()>
     {
 	match res {
 	    Ok(Ok((path, true))) => info!("<{:?}> OK (processed)", path),
-	    Ok(Ok((path, false))) => info!("<{:?}> OK (skipped)", path),
+	    Ok(Ok((path, false))) => debug!("<{:?}> OK (skipped)", path),
 	    Err(e) => {
 		trace!("child {} cancelled by {}", i, if e.is_panic(){"panic"} else {"cancel"});
 		if e.is_panic() {

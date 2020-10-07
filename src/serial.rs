@@ -42,7 +42,7 @@ fn work<P: AsRef<Path>>(apath: P) -> Result<(P, bool), Error>
     use std::os::unix::fs::MetadataExt;
 
     let nlink = meta.nlink();
-    debug!("<{:?}> has {} links", path, nlink);
+    trace!("<{:?}> has {} links", path, nlink);
     if nlink > 1 {
 	unlink(path)?;
 	Ok((apath, true))
@@ -63,7 +63,7 @@ pub fn main<I: IntoIterator<Item=String>>(list: I) -> eyre::Result<()>
     {
 	match work(file) {
 	    Ok((path, true)) => info!("<{:?}> OK (processed)", path),
-	    Ok((path, false)) => info!("<{:?}> OK (skipped)", path),
+	    Ok((path, false)) => debug!("<{:?}> OK (skipped)", path),
 	    Err(kind) if !kind.kind().is_skippable() => {
 		failures.push((kind.path().to_owned(), kind.to_string()));
 		let fuck = format!("{:?}", kind.path());
