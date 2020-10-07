@@ -59,7 +59,7 @@ where I::Item: Hash
     {
 	let set = match self.size_hint() {
 	    (0, Some(0)) | (0, None) => HashSet::new(),
-	    (x, None) | (_, Some(x)) => HashSet::with_capacity(x),
+	    (_, Some(x)) | (x, None) => HashSet::with_capacity(x),
 	};
 	DedupIter(self, set)
     }

@@ -558,6 +558,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "recolored"
+version = "1.9.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1584c92dd8a87686229f766bb3a62d263a90c47c81e45a49f1a6d684a1b7968d"
+dependencies = [
+ "atty",
+ "lazy_static",
+ "winapi 0.3.9",
+]
+
+[[package]]
 name = "redox_syscall"
 version = "0.1.57"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -621,6 +632,7 @@ dependencies = [
  "lazy_static",
  "log",
  "pretty_env_logger",
+ "recolored",
  "rustc_version",
  "tokio",
  "uuid",

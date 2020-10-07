@@ -1,21 +1,33 @@
 //! Splash screen~
 use super::*;
 use std::borrow::Cow;
+use recolored::Colorize;
 
 macro_rules! feature {
     (in $name:tt, $desc:literal) => {
 	cfg_if! {
 	    if #[cfg($name)] {
-		println!(" +{}\t{}", stringify!($name), $desc);
+		println!(" +{}\t{}", stringify!($name).bright_green(), $desc);
+	    } else {
+		println!(" -{}", stringify!($name));
 	    }
 	}
     };
-    ($name:literal, $desc:literal $($tt:tt)*) => {
+    (on $name:literal, $desc:literal $($tt:tt)*) => {
 	cfg_if! {
 	    if #[cfg(feature=$name)] {
-		println!(" +{}\t{}", $name, format!($desc $($tt)*));
+		println!(" +{}\t{}", $name.red(), format!($desc $($tt)*));
 	    }  else {
-		println!(" -{}", $name);
+		println!(" -{}", $name.bright_blue());
+	    }
+	}
+    };
+    (off $name:literal, $desc:literal $($tt:tt)*) => {
+	cfg_if! {
+	    if #[cfg(feature=$name)] {
+		println!(" +{}\t{}", $name.bright_red(), format!($desc $($tt)*));
+	    }  else {
+		println!(" -{}", $name.blue());
 	    }
 	}
     };
@@ -38,13 +50,17 @@ For verbose output, set `RUST_LOG` env var to one of the following:
 
 Made by {} with <3 (Licensed GPL 3.0 or later)"#, arg::program_name(), env!("CARGO_PKG_VERSION"), env!("CARGO_PKG_AUTHORS"));
     println!("\nEnabled extensions: ");
+    
     feature!(in nightly, "\tCompiled with Rust nightly extensions");
-    println!("Features:");
-    feature!("parallel", "\tWill run up to {} operations in parallel", parallel::MAX_WORKERS.map(|x| Cow::Owned(x.to_string())).unwrap_or(Cow::Borrowed("unlimited")));
-    feature!("limit-concurrency", "Concurrency is capped");
-    feature!("threads", "\tUsing thread-pool");
-    feature!("recursive", "\tRecursivly process files up to {} directories deep", recurse::MAX_DEPTH);
-    feature!("limit-recursion", "Concurrency is capped");
+    
+    println!("\nFeatures:");
+
+    feature!(on "splash", "\tShow this message");
+    feature!(on "parallel", "\tWill run up to {} operations in parallel", parallel::MAX_WORKERS.map(|x| Cow::Owned(x.to_string())).unwrap_or(Cow::Borrowed("unlimited")));
+    feature!(on "limit-concurrency", "Concurrency is capped");
+    feature!(off "threads", "\tUsing thread-pool");
+    feature!(on "recursive", "\tRecursivly process files up to {} directories deep", recurse::MAX_DEPTH);
+    feature!(on "limit-recursion", "Concurrency is capped");
 
     std::process::exit(1)
 }

@@ -107,7 +107,7 @@ pub async fn main<I: Stream<Item=String>>(list: I) -> eyre::Result<()>
     //let list = list.into_iter();
     let mut failures = match list.size_hint() {
 	(0, Some(0)) | (0, None) => Vec::new(),
-	(x, None) | (_, Some(x)) => Vec::with_capacity(x),
+	(_, Some(x)) | (x, None)  => Vec::with_capacity(x),
     };
     let mut done = 0usize;
     for (i, res) in (0usize..).zip(join_stream(list.map(|file| tokio::spawn(work(file, sem.clone()))))
@@ -170,11 +170,7 @@ fn push_dir<'a>(path: &'a Path, depth: usize, to: mpsc::Sender<String>) -> BoxFu
 	    (0, Some(0)) | (0, None) => Vec::new(),
 	    (x, None) | (_, Some(x)) => Vec::with_capacity(x),
 	};
-	let can_recurse = match MAX_DEPTH {
-	    Recursion::All => true,
-	    Recursion::N(n) if depth < usize::from(n) => true,
-	    _ => false,
-	};
+	let can_recurse = MAX_DEPTH.can_recurse(depth);
 	while let Some(item) = dir.next_entry().await? {
 	    let mut to = to.clone();
 	    workers.push(async move {

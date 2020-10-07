@@ -82,6 +82,13 @@ mod serial;
 #[cfg(not(feature="parallel"))]
 fn main() -> eyre::Result<()> {
     reyre!(init(), "Failed to initialise")?;
-    let args = args_or_out(std::env::args(), 2).skip(1).dedup();
-    todo!("Sync unimplemented")
+    cfg_if!{
+	if #[cfg(feature="recursive")] {
+	    let args = recurse::walk_dirs(args_or_out(std::env::args(), 2).skip(1)).dedup();
+	} else {
+	    let args = args_or_out(std::env::args(), 2).skip(1).dedup();
+	}
+    };
+    reyre!(serial::main(args),
+	   "Jobs failed")
 }
