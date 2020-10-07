@@ -61,6 +61,7 @@ Made by {} with <3 (Licensed GPL 3.0 or later)"#, arg::program_name(), env!("CAR
     feature!(off "threads", "\tUsing thread-pool");
     feature!(on "recursive", "\tRecursivly process files up to {} directories deep", recurse::MAX_DEPTH);
     feature!(on "limit-recursion", "Concurrency is capped");
-
+    feature!(off "paranoid-dedup", "Use SHA256 for argument dedup instead of basic hashing");
+    
     std::process::exit(1)
 }

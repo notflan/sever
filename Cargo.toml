@@ -7,8 +7,6 @@ edition = "2018"
 readme = "README.org"
 license = "GPL-3.0-or-later"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [features]
 default = ["parallel", "limit-concurrency", "splash", "limit-recursion"]
 
@@ -16,14 +14,16 @@ default = ["parallel", "limit-concurrency", "splash", "limit-recursion"]
 limit-concurrency = ["parallel"]
 # Handle directories recursively
 recursive = []
+# Limit the max recursion depth to 256
 limit-recursion = ["recursive"]
+# Show splash message when ran with no arguments
 splash = []
+# Run operations in parallel
 parallel = ["tokio", "futures", "pin-project"]
+# Run on a thread pool
 threads = ["parallel", "tokio/rt-threaded"]
-
-# use PRETTY_ENV_LOGGER I guess
-# On trace: Display no. of hardlinks for each file
-# On debug: Display reason why why metadata() failes, instead of just "warn: stat failed"
+# Use SHA256 hash algorithm for argument file deduping instead of default hasher.
+paranoid-dedup = ["sha2"]
 
 [dependencies]
 cfg-if = "0.1.10"
@@ -36,6 +36,7 @@ lazy_static = "1.4.0"
 uuid = {version = "0.8.1", features = ["v4"]}
 recolored = "1.9.3"
 pin-project = {version = "0.4.26", optional=true}
+sha2 = {version = "0.9.1", optional=true}
 
 [build-dependencies]
 rustc_version = "0.2"
