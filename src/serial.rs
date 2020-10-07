@@ -64,9 +64,21 @@ pub fn main<I: IntoIterator<Item=String>>(list: I) -> eyre::Result<()>
 	match work(file) {
 	    Ok((path, true)) => info!("<{:?}> OK (processed)", path),
 	    Ok((path, false)) => info!("<{:?}> OK (skipped)", path),
+	    Err(kind) if !kind.kind().is_skippable() => {
+		failures.push((kind.path().to_owned(), kind.to_string()));
+		let fuck = format!("{:?}", kind.path());
+		let sug = kind.kind().suggestion();
+		let err = Err::<std::convert::Infallible, _>(kind)
+		    .wrap_err_with(|| eyre!("<{}> Failed", fuck))
+		    .with_section(move || fuck.header("Path was"))
+		    .with_suggestion(|| sug)
+		    .unwrap_err();
+		error!("{}", err);
+		debug!("Error: {:?}", err);
+	    },
 	    Err(k) => {
 		failures.push((k.path().to_owned(), k.to_string()));
-		trace!("<{:?}> Failed (skipped)", k.path());
+		warn!("<{:?}> Failed (skipped)", k.path());
 	    },
 	}
 	done+=1;

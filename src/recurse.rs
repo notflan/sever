@@ -41,7 +41,7 @@ impl fmt::Display for Recursion
 	match self {
 	    Self::N(n) => write!(f, "{}", n),
 	    Self::All => write!(f, "unlimited"),
-	    _ => write!(f, "no"),
+	    #[allow(unreachable_patterns)] _ => write!(f, "no"),
 	}
     }
 }

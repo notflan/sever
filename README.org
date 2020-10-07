@@ -1,0 +1,50 @@
+* sever
+Coerce hardlinks into new files
+
+* Usage
+Basic usage is simple:
+#+BEGIN_SRC shell
+  $ sever file1 file2 file3 dir/*
+#+END_SRC
+
+** Logging
+To change the verbosity level of output messages, set the ~RUST_LOG~ env var:
+
+ - trace: Most verbose. Show information about files as they're processed and redundant failures
+ - debug: Verbose. Show all errors and their causes
+ - info: The default level. Just show completions/failures
+ - warn: Just show warnings
+ - error: Just show errors
+
+* Features
+The ~sever~ binary has no flags. Instead, it comes with compile-time feature flags that can be enabled when building:
+
+ | Flag              | Description                                                     | Default |
+ |-------------------+-----------------------------------------------------------------+---------|
+ | parallel          | Process files in parallel                                       | On      |
+ | threads           | Process files with a multi-threaded scheduler                   | Off     |
+ | limit-concurrency | Apply a max limit (default 4096) of concurrent operation        | On      |
+ | recursive         | Allow processing of directories by recursing through them       | On      |
+ | limit-recursion   | Apply a max depth of recursion (default 256)                    | On      |
+ | splash            | Print program's compiled information when ran with no arguments | On      |
+
+** Building
+To build with default features, run:
+
+#+BEGIN_SRC shell
+  $ cargo build --release
+  $ strip target/release/sever 
+#+END_SRC
+
+The binary will be built to ~target/release/sever~
+
+*** Building with non-default features
+To build with your desired features, run:
+#+BEGIN_SRC shell
+  $ cargo build --release --no-default-features --features feature1,feature2,feature3,...
+  $ strip target/release/sever 
+#+END_SRC
+
+The binary will be built to ~target/release/sever~
+* License
+GPL'd with <3

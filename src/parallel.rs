@@ -141,7 +141,7 @@ pub async fn main<I: Stream<Item=String>>(list: I) -> eyre::Result<()>
 	    },
 	    Ok(Err(k)) => {
 		failures.push((k.path().to_owned(), k.to_string()));
-		trace!("<{:?}> Failed (skipped)", k.path());
+		warn!("<{:?}> Failed (skipped)", k.path());
 	    },
 	}
 	done+=1;
