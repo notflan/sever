@@ -98,7 +98,7 @@ async fn join_stream<I: Stream>(stream: I) -> impl Iterator<Item=<I::Item as Fut
 where I::Item: Future
 {
     //gotta be a better way than heap allocating here, right?
-    stream.then(|x| async move { x.await }).collect::<Vec<_>>().await.into_iter()
+    join_all(stream.collect::<Vec<_>>().await.into_iter()).await.into_iter() //TODO: We need to de-dupe this
 }
 
 pub async fn main<I: Stream<Item=String>>(list: I) -> eyre::Result<()>
@@ -213,7 +213,7 @@ pub async fn expand_dir(p: String) -> impl Stream<Item=String>
 		    tx.send(p).await.unwrap();
 		}
 	    });
-	    rx	
+	    rx //TODO: map this to dedup
 	} else {
 	    stream::iter(iter::once(p).filter_map(|p| {
 		if Path::new(&p).is_dir() {

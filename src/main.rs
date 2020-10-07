@@ -71,7 +71,7 @@ async fn main() -> eyre::Result<()> {
 				       .dedup())
 			  .filter_map(|file| {
 			      async move {
-				  Some(parallel::expand_dir(file).await)
+				  Some(parallel::expand_dir(file).await) //TODO: We gotta in here, too
 			      }
 			  }).flatten()).await,
 	   "Jobs failed")
