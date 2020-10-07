@@ -213,7 +213,8 @@ pub async fn expand_dir(p: String) -> impl Stream<Item=String>
 		    tx.send(p).await.unwrap();
 		}
 	    });
-	    rx //TODO: map this to dedup
+	    rx
+	    //DedupStream(rx, HashSet::new())
 	} else {
 	    stream::iter(iter::once(p).filter_map(|p| {
 		if Path::new(&p).is_dir() {

@@ -1,6 +1,7 @@
 #![allow(dead_code)]
 #![allow(unused_imports)]
 
+#[cfg(feature="parallel")] #[macro_use] extern crate pin_project;
 #[macro_use] extern crate log;
 #[macro_use] mod macros;
 
@@ -73,7 +74,9 @@ async fn main() -> eyre::Result<()> {
 			      async move {
 				  Some(parallel::expand_dir(file).await) //TODO: We gotta in here, too
 			      }
-			  }).flatten()).await,
+			  })
+			  .flatten()
+			  .dedup()).await,
 	   "Jobs failed")
 }
 

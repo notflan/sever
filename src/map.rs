@@ -7,9 +7,9 @@ use std::{
 };
 
 //TODO: Feature flag for SHA256 hashing
-type HashOutput = u64;
+pub type HashOutput = u64;
 
-fn compute<H: Hash>(what: &H) -> HashOutput
+pub fn compute<H: Hash>(what: &H) -> HashOutput
 {
     use std::hash::Hasher;
     let mut hasher = std::collections::hash_map::DefaultHasher::new();

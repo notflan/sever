@@ -1,7 +1,7 @@
 [package]
 name = "sever"
 description = "Coerce hardlinks into new files"
-version = "1.0.1"
+version = "1.0.2"
 authors = ["Avril <flanchan@cumallover.me>"]
 edition = "2018"
 readme = "README.org"
@@ -18,7 +18,7 @@ limit-concurrency = ["parallel"]
 recursive = []
 limit-recursion = ["recursive"]
 splash = []
-parallel = ["tokio", "futures"]
+parallel = ["tokio", "futures", "pin-project"]
 threads = ["parallel", "tokio/rt-threaded"]
 
 # use PRETTY_ENV_LOGGER I guess
@@ -35,6 +35,7 @@ futures = {version = "0.3.5", optional = true}
 lazy_static = "1.4.0"
 uuid = {version = "0.8.1", features = ["v4"]}
 recolored = "1.9.3"
+pin-project = {version = "0.4.26", optional=true}
 
 [build-dependencies]
 rustc_version = "0.2"
