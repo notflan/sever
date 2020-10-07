@@ -27,6 +27,7 @@ The ~sever~ binary has no flags. Instead, it comes with compile-time feature fla
  | recursive         | Allow processing of directories by recursing through them       | On      |
  | limit-recursion   | Apply a max depth of recursion (default 256)                    | On      |
  | splash            | Print program's compiled information when ran with no arguments | On      |
+ | paranoid-dedup    | Use SHA256 for argument dedup instead of basic hashing          | Off     |
 
 ** Building
 To build with default features, run:
